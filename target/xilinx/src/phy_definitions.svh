@@ -74,10 +74,10 @@
   output [0:0]    c0_ddr4_cke, \
   output [0:0]    c0_ddr4_odt, \
   output [1:0]    c0_ddr4_cs_n, \
-  inout  [8:0]    c0_ddr4_dm_dbi_n, \
-  inout  [71:0]   c0_ddr4_dq, \
-  inout  [8:0]    c0_ddr4_dqs_c, \
-  inout  [8:0]    c0_ddr4_dqs_t,
+  inout  [7:0]    c0_ddr4_dm_dbi_n, \
+  inout  [63:0]   c0_ddr4_dq, \
+  inout  [7:0]    c0_ddr4_dqs_c, \
+  inout  [7:0]    c0_ddr4_dqs_t,
 
 `define DDR3_INTF \
   output        ddr3_ck_p, \
