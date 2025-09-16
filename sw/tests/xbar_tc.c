@@ -16,7 +16,7 @@
 #include "printf.h"
 #include <stdlib.h>
 
-#define N_ITERATIONS 200
+#define N_ITERATIONS 1000
 
 extern void pad(uint64_t cycles);
 
@@ -39,6 +39,7 @@ int main(void) {
     uint64_t hart_id = get_mhartid();
     uint32_t num_harts = *reg32(&__base_regs, CHESHIRE_NUM_INT_HARTS_REG_OFFSET);
     uint64_t probe_start;
+    uint8_t slice_overrun;
 
     // Initialize secret vector and UART
     if (hart_id == 0) {
@@ -53,8 +54,13 @@ int main(void) {
         smp_resume();
     }
 
+    // Warm up (cache pad vector)
+    pad(3000);
+
     // Synchronize cores
-    while (get_mcycle() < 350000);
+    slice_overrun = 1;
+    while (get_mcycle() < 500000) slice_overrun = 0;
+    if (slice_overrun) printf("[%d] Overrun! (Init)\n", hart_id);
 
     // Prime&Probe
     for (uint64_t i = 0; i < N_ITERATIONS; i++) {
@@ -63,12 +69,25 @@ int main(void) {
             uart_read_ready(&__base_uart);
         }
 
+#ifdef MITIGATE
+        asm volatile (".word 0xfffff00b" ::: "memory");
+
+        slice_overrun = 1;
+        while (get_mcycle() < 502000 + i * 2000) slice_overrun = 0;
+        if (slice_overrun) printf("[%d] Overrun! (Timeslice)\n", hart_id);
+#endif
+
         // Probe
-        probe_start = sync(500);
+        probe_start = sync(200);
         uart_read_ready(&__base_uart);
         if (hart_id == 0) {
             time[i] = get_mcycle() - probe_start;
         }
+
+#ifdef MITIGATE
+        asm volatile (".word 0xfffff00b" ::: "memory");
+#endif
+
     }
 
     // Print results

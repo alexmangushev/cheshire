@@ -243,7 +243,10 @@ module cheshire_soc import cheshire_pkg::*; #(
     NoAddrRules:        AxiOut.num_rules
   };
 
-  axi_xbar #(
+  logic [NumIntHarts-1:0] clr_soc;
+  logic clr_soc_ack;
+
+  axi_xbar_clearable #(
     .Cfg            ( AxiXbarCfg ),
     .ATOPs          ( 1  ),
     .Connectivity   ( '1 ),
@@ -265,6 +268,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .clk_i,
     .rst_ni,
     .test_i                 ( test_mode_i ),
+    .clr_i                  ( |clr_soc ),
+    .clr_ack_o              ( clr_soc_ack ),
     .slv_ports_req_i        ( axi_rt_in_req ),
     .slv_ports_resp_o       ( axi_rt_in_rsp ),
     .mst_ports_req_o        ( axi_out_req ),
@@ -273,6 +278,8 @@ module cheshire_soc import cheshire_pkg::*; #(
     .en_default_mst_port_i  ( '0 ),
     .default_mst_port_i     ( '0 )
   );
+
+  //assign clr_soc_ack = |clr_soc;
 
   // Connect external masters
   if (Cfg.AxiExtNumMst > 0) begin : gen_ext_axi_mst
@@ -629,7 +636,9 @@ module cheshire_soc import cheshire_pkg::*; #(
       .cvxif_req_o      ( ),
       .cvxif_resp_i     ( '0 ),
       .noc_req_o        ( core_out_req ),
-      .noc_resp_i       ( core_out_rsp )
+      .noc_resp_i       ( core_out_rsp ),
+      .clr_soc_o        ( clr_soc[i] ),
+      .clr_soc_ack_i    ( clr_soc_ack )
     );
 
     if (Cfg.BusErr) begin : gen_cva6_bus_err
