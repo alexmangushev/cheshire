@@ -19,10 +19,7 @@ module dram_wrapper_xilinx #(
   parameter type axi_soc_r_chan_t  = logic,
   parameter type axi_soc_req_t     = logic,
   parameter type axi_soc_resp_t    = logic,
-  parameter int unsigned DdrCsNWidth = 1,
-  parameter int unsigned DdrDmDbiNWidth = 8,
-  parameter int unsigned DdrDqWidth = 64,
-  parameter int unsigned DdrDqsWidth = 8
+  parameter int unsigned DdrCsNWidth = 1
 ) (
   // System reset
   input  logic  sys_rst_i,
@@ -32,7 +29,7 @@ module dram_wrapper_xilinx #(
   input  logic  soc_clk_i,
   // PHY interfaces
 `ifdef USE_DDR4
-  `DDR4_INTF(DdrCsNWidth, DdrDmDbiNWidth, DdrDqWidth, DdrDqsWidth)
+  `DDR4_INTF(DdrCsNWidth)
 `endif
 `ifdef USE_DDR3
   `DDR3_INTF
@@ -286,27 +283,6 @@ module dram_wrapper_xilinx #(
     .c0_ddr4_s_axi_rresp        ( cdc_dram_rsp.r.resp   ),
     .c0_ddr4_s_axi_rlast        ( cdc_dram_rsp.r.last   ),
     .c0_ddr4_s_axi_rvalid       ( cdc_dram_rsp.r_valid  ),
-    `ifdef TARGET_VCU128
-      // TODO: Shouldn't we map this to an external reg port?
-      // AXI control
-      .c0_ddr4_s_axi_ctrl_awvalid ( '0 ),
-      .c0_ddr4_s_axi_ctrl_awready ( ),
-      .c0_ddr4_s_axi_ctrl_awaddr  ( '0 ),
-      .c0_ddr4_s_axi_ctrl_wvalid  ( '0 ),
-      .c0_ddr4_s_axi_ctrl_wready  ( ),
-      .c0_ddr4_s_axi_ctrl_wdata   ( '0 ),
-      .c0_ddr4_s_axi_ctrl_bvalid  ( ),
-      .c0_ddr4_s_axi_ctrl_bready  ( '0 ),
-      .c0_ddr4_s_axi_ctrl_bresp   ( ),
-      .c0_ddr4_s_axi_ctrl_arvalid ( '0 ),
-      .c0_ddr4_s_axi_ctrl_arready ( ),
-      .c0_ddr4_s_axi_ctrl_araddr  ( '0 ),
-      .c0_ddr4_s_axi_ctrl_rvalid  ( ),
-      .c0_ddr4_s_axi_ctrl_rready  ( '0 ),
-      .c0_ddr4_s_axi_ctrl_rdata   ( ),
-      .c0_ddr4_s_axi_ctrl_rresp   ( ),
-      .c0_ddr4_interrupt          ( ),
-    `endif
     // Others
     .c0_init_calib_complete     ( ),
     .addn_ui_clkout1            ( dram_clk_o ),
