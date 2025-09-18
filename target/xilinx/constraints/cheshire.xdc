@@ -6,6 +6,7 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Yvan Tortorella <yvan.tortorella@chips.it>
 
 #################
 # Clock routing #
