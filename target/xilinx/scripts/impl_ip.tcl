@@ -51,6 +51,60 @@ switch $proj {
                     CONFIG.CLKOUT4_PHASE_ERROR {89.971} \
                     ] [get_ips $proj]
             }
+            qmtech_kintex7 {
+                # cant't place with 50 MHz, use 25 MHz
+                #set_property -dict [list \
+                    CONFIG.PRIM_IN_FREQ {50} \
+                    CONFIG.CLKOUT1_USED {true} \
+                    CONFIG.CLKOUT2_USED {true} \
+                    CONFIG.CLKOUT3_USED {true} \
+                    CONFIG.CLK_OUT1_PORT {clk_48} \
+                    CONFIG.CLK_OUT2_PORT {clk_200} \
+                    CONFIG.CLK_OUT3_PORT {clk_50} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {48} \
+                    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200} \
+                    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {50} \
+                    CONFIG.CLKIN1_JITTER_PS {200.0} \
+                    CONFIG.MMCM_CLKFBOUT_MULT_F {24.000} \
+                    CONFIG.MMCM_CLKIN1_PERIOD {20.000} \
+                    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
+                    CONFIG.MMCM_CLKOUT0_DIVIDE_F {25.000} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {6} \
+                    CONFIG.MMCM_CLKOUT2_DIVIDE {24} \
+                    CONFIG.NUM_OUT_CLKS {3} \
+                    CONFIG.CLKOUT1_JITTER {165.425} \
+                    CONFIG.CLKOUT1_PHASE_ERROR {154.678} \
+                    CONFIG.CLKOUT2_JITTER {124.134} \
+                    CONFIG.CLKOUT2_PHASE_ERROR {154.678} \
+                    CONFIG.CLKOUT3_JITTER {163.696} \
+                    CONFIG.CLKOUT3_PHASE_ERROR {154.678} \
+                    ] [get_ips $proj]
+                    set_property -dict [list \
+                    CONFIG.PRIM_IN_FREQ {50} \
+                    CONFIG.CLKOUT2_USED {true} \
+                    CONFIG.CLKOUT3_USED {true} \
+                    CONFIG.CLK_OUT1_PORT {clk_25} \
+                    CONFIG.CLK_OUT2_PORT {clk_200} \
+                    CONFIG.CLK_OUT3_PORT {clk_48} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {25} \
+                    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200} \
+                    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {48} \
+                    CONFIG.CLKIN1_JITTER_PS {200.0} \
+                    CONFIG.MMCM_CLKFBOUT_MULT_F {20.000} \
+                    CONFIG.MMCM_CLKIN1_PERIOD {20.000} \
+                    CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
+                    CONFIG.MMCM_CLKOUT0_DIVIDE_F {40.000} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {5} \
+                    CONFIG.MMCM_CLKOUT2_DIVIDE {21} \
+                    CONFIG.NUM_OUT_CLKS {3} \
+                    CONFIG.CLKOUT1_JITTER {236.428} \
+                    CONFIG.CLKOUT1_PHASE_ERROR {164.985} \
+                    CONFIG.CLKOUT2_JITTER {142.107} \
+                    CONFIG.CLKOUT2_PHASE_ERROR {164.985} \
+                    CONFIG.CLKOUT3_JITTER {194.663} \
+                    CONFIG.CLKOUT3_PHASE_ERROR {164.985} \
+                    ] [get_ips $proj]
+            }
             vcu128 {
                 set_property -dict [list \
                     CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
@@ -127,6 +181,14 @@ switch $proj {
             ${project_root}/${proj}.srcs/sources_1/ip/${proj}/mig_a.prj
         switch $board {
             genesys2 {
+                set_property -dict [list \
+                    CONFIG.XML_INPUT_FILE {mig_a.prj} \
+                    CONFIG.RESET_BOARD_INTERFACE {Custom} \
+                    CONFIG.MIG_DONT_TOUCH_PARAM {Custom} \
+                    CONFIG.BOARD_MIG_PARAM {Custom} \
+                    ] [get_ips $proj]
+            }
+            qmtech_kintex7 {
                 set_property -dict [list \
                     CONFIG.XML_INPUT_FILE {mig_a.prj} \
                     CONFIG.RESET_BOARD_INTERFACE {Custom} \

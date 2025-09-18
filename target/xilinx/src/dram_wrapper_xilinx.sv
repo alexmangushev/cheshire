@@ -79,6 +79,19 @@ module dram_wrapper_xilinx #(
   };
 `endif
 
+`ifdef TARGET_QMTECH_KINTEX7
+  localparam dram_cfg_t cfg = '{
+    EnCdc         : 1,    // 200 MHz AXI (cf. CCdcLogDepth)
+    CdcLogDepth   : 5,
+    IdWidth       : 4,    // Fixed
+    AddrWidth     : 30,
+    DataWidth     : 64,
+    StrobeWidth   : 8,
+    MaxUniqIds    : 8,    // TODO: suboptimal, but limited by CVA6/LLC
+    MaxTxns       : 24    // TODO: suboptimal, but limited by CVA6/LLC
+  };
+`endif
+
   localparam SocDataWidth = $bits(soc_req_i.w.data);
   localparam SocIdWidth   = $bits(soc_req_i.ar.id);
   localparam SocUserWidth = $bits(soc_req_i.ar.user);

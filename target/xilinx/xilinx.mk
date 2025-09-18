@@ -45,8 +45,10 @@ $(CHS_XILINX_DIR)/build/%/out.xci: \
 # Bitstreams #
 ##############
 
-CHS_XILINX_BOARDS := genesys2 vcu128
+# WARN qmtech_kintex7 use system clock 25 MHz
+CHS_XILINX_BOARDS := genesys2 vcu128 qmtech_kintex7
 
+CHS_XILINX_IPS_qmtech_kintex7 := clkwiz mig7s
 CHS_XILINX_IPS_genesys2 := clkwiz vio mig7s
 CHS_XILINX_IPS_vcu128   := clkwiz vio ddr4
 

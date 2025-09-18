@@ -10,6 +10,12 @@ set fpart(genesys2) "xc7k325tffg900-2"
 set hwdev(genesys2) "xc7k325t_0"
 set cfgmp(genesys2) "s25fl256sxxxxxx0-spi-x1_x2_x4"
 
+# qmtech_kintex7 board params
+# set bpart(qmtech_kintex7) "digilentinc.com:genesys2:part0:1.1" NO BOARD FILE
+set fpart(qmtech_kintex7) "xc7k325tffg676-1" 
+set hwdev(qmtech_kintex7) "xc7k325t_0"
+# set cfgmp(qmtech_kintex7) "s25fl256sxxxxxx0-spi-x1_x2_x4" TODO
+
 # vcu128 board params
 set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
 set fpart(vcu128) "xcvu37p-fsvh2892-2L-e"
@@ -45,7 +51,9 @@ proc init_impl {xilinx_root argc argv} {
     file delete -force [glob -nocomplain ${project_root}/*]
     # Create project
     create_project $proj $project_root -force -part $fpart($board)
-    set_property board_part $bpart($board) [current_project]
+    if {$board != "qmtech_kintex7"} {
+        set_property board_part $bpart($board) [current_project]
+    }
 }
 
 # Open a target device in the hardware manager

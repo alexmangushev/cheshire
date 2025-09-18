@@ -14,8 +14,12 @@
 // TODO: Expose more IO: unused SPI CS, Serial Link, etc.
 
 module cheshire_top_xilinx import cheshire_pkg::*; (
+`ifdef ONE_WIRE_CLK_IN
+  input  logic  sys_clk,
+`else
   input  logic  sys_clk_p,
   input  logic  sys_clk_n,
+`endif
 
 `ifdef USE_RESET
   input  logic  sys_reset,
@@ -25,7 +29,9 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `endif
 
 `ifdef USE_SWITCHES
+  `ifndef NO_TEST_MODE
   input logic       test_mode_i,
+  `endif
   input logic [1:0] boot_mode_i,
 `endif
 
@@ -53,10 +59,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 `endif
 
 `ifdef USE_SD
-  input  logic        sd_cd_i,
+  // input  logic        sd_cd_i,
   output logic        sd_cmd_o,
   inout  wire  [3:0]  sd_d_io,
-  output logic        sd_reset_o,
+  // output logic        sd_reset_o,
   output logic        sd_sclk_o,
 `endif
 
@@ -92,11 +98,14 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   `DDR3_INTF
 `endif
 
-  output logic  uart_tx_o,
-  input  logic  uart_rx_i,
-
+`ifdef USE_USB
   inout  wire [UsbNumPorts-1:0] usb_dm_io,
-  inout  wire [UsbNumPorts-1:0] usb_dp_io
+  inout  wire [UsbNumPorts-1:0] usb_dp_io,
+`endif
+
+  output logic  uart_tx_o,
+  input  logic  uart_rx_i
+
 );
 
   ///////////////////////
@@ -136,10 +145,13 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   //  Clock Generation  //
   ////////////////////////
 
+`ifndef ONE_WIRE_CLK_IN
   wire sys_clk;
+`endif
   wire soc_clk;
   wire usb_clk;
 
+`ifndef ONE_WIRE_CLK_IN
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
   ) i_bufds_sys_clk (
@@ -157,7 +169,17 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .clk_20   ( ),
     .clk_10   ( )
   );
-
+`else
+  wire ddr_clk; 
+clkwiz i_clkwiz (
+    .clk_in1  ( sys_clk ),
+    .reset    ( '0 ),
+    .locked   ( ),
+    .clk_25   ( soc_clk ),
+    .clk_48   ( usb_clk ),
+    .clk_200  ( ddr_clk)
+  );
+`endif
   /////////////////////
   //  System Inputs  //
   /////////////////////
@@ -177,6 +199,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   logic [1:0] boot_mode_i;
   assign test_mode_i = '0;
   assign boot_mode_i = '0;
+`endif
+
+`ifdef NO_TEST_MODE
+  assign test_mode_i = '0;
 `endif
 
   ////////////
@@ -292,7 +318,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
 
 `ifdef USE_SD
   // Assert reset low => Apply power to the SD Card
-  assign sd_reset_o       = 1'b0;
+  // assign sd_reset_o       = 1'b0;
   // SCK  - SD CLK signal
   assign sd_sclk_o        = spi_sck_en    ? spi_sck_soc       : 1'b1;
   // CS   - SD DAT3 signal
@@ -431,13 +457,14 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   logic [UsbNumPorts-1:0] usb_dp_o;
   logic [UsbNumPorts-1:0] usb_dp_oe_o;
 
+`ifdef USE_USB
   for (genvar i = 0; i < FPGACfg.Usb*UsbNumPorts; ++i) begin : gen_usb_tristate
     assign usb_dp_io [i] = usb_dp_oe_o[i] ? usb_dp_o[i] : 'z;
     assign usb_dp_i  [i] = usb_dp_io[i];
     assign usb_dm_io [i] = usb_dm_oe_o[i] ? usb_dm_o[i] : 'z;
     assign usb_dm_i  [i] = usb_dm_io[i];
   end
-
+`endif
   /////////////////////////
   // "RTC" Clock Divider //
   /////////////////////////
@@ -445,6 +472,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
   logic rtc_clk_d, rtc_clk_q;
   logic [15:0] counter_d, counter_q;
 
+  `ifndef DESIGN_25MHZ
   // Divide soc_clk (50 MHz) by 50 => 1 MHz RTC Clock
   always_comb begin
     counter_d = counter_q + 1;
@@ -455,6 +483,18 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
       rtc_clk_d = ~rtc_clk_q;
     end
   end
+`else
+  // Divide soc_clk (25 MHz) by 50 => 1 MHz RTC Clock
+  always_comb begin
+    counter_d = counter_q + 1;
+    rtc_clk_d = rtc_clk_q;
+
+    if(counter_q == 12) begin
+      counter_d = '0;
+      rtc_clk_d = ~rtc_clk_q;
+    end
+  end
+`endif
 
   always_ff @(posedge soc_clk, negedge rst_n) begin
     if(~rst_n) begin
@@ -542,7 +582,11 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .sys_rst_i    ( sys_rst ),
     .soc_resetn_i ( rst_n   ),
     .soc_clk_i    ( soc_clk ),
+    `ifndef ONE_WIRE_CLK_IN
     .dram_clk_i   ( sys_clk ),
+    `else
+    .dram_clk_i   ( ddr_clk ),
+    `endif
     .soc_req_i    ( axi_dram_mst_req ),
     .soc_rsp_o    ( axi_dram_mst_rsp ),
     .*
@@ -661,8 +705,7 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .vga_green_o,
     .vga_blue_o,
 `endif
-    .uart_tx_o,
-    .uart_rx_i,
+`ifdef USE_USB
     .usb_clk_i          ( usb_clk ),
     .usb_rst_ni         ( rst_n ), // Technically should sync to `usb_clk`, but pulse is long enough
     .usb_dm_i,
@@ -670,7 +713,10 @@ module cheshire_top_xilinx import cheshire_pkg::*; (
     .usb_dm_oe_o,
     .usb_dp_i,
     .usb_dp_o,
-    .usb_dp_oe_o
+    .usb_dp_oe_o,
+`endif
+    .uart_tx_o,
+    .uart_rx_i
   );
 
 endmodule
