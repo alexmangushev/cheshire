@@ -94,18 +94,8 @@ switch $proj {
     vio {
         create_ip -name vio -vendor xilinx.com -library ip -version 3.0 -module_name $proj
         switch $board {
-            genesys2 {
-                set_property -dict [list \
-                    CONFIG.C_NUM_PROBE_OUT {3} \
-                    CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
-                    CONFIG.C_PROBE_OUT1_INIT_VAL {0x0} \
-                    CONFIG.C_PROBE_OUT2_INIT_VAL {0x0} \
-                    CONFIG.C_PROBE_OUT1_WIDTH {2} \
-                    CONFIG.C_EN_PROBE_IN_ACTIVITY {0} \
-                    CONFIG.C_NUM_PROBE_IN {0} \
-                    ] [get_ips $proj]
-            }
-            vcu128 {
+            genesys2 -
+            vcu128   {
                 set_property -dict [list \
                     CONFIG.C_NUM_PROBE_OUT {3} \
                     CONFIG.C_PROBE_OUT0_INIT_VAL {0x0} \
